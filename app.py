@@ -1,53 +1,46 @@
 import streamlit as st
-import google.generative_api as genai
+import google.generativeai as genai
 
-# Page Config for Mobile
-st.set_page_config(page_title="Smile Finance AI", page_icon="💰")
+# Mobile Friendly UI
+st.set_page_config(page_title="Smile Finance AI", layout="centered")
 
-# Custom CSS for clean Gemini-like UI (Large & Clean Fonts)
 st.markdown("""
     <style>
-    .stApp { background-color: white; }
-    .stChatMessage { font-size: 18px !important; color: #1f1f1f; }
-    button { border-radius: 20px !important; }
+    .stApp { background-color: #ffffff; }
+    .stChatMessage { font-size: 110%; line-height: 1.6; }
     </style>
     """, unsafe_allow_index=True)
 
-# System Prompt (Aapke Rules)
-SYSTEM_PROMPT = """
-Suno Gemini, tum ek 'Dost' ho. Smile Finance Solution ke liye kaam karte ho.
-Rules:
-1. Shuruat me koi bank ya product ka naam nahi lena. 
-2. Pehle user se baate karo, unki takleef (need) ko samjho jaise ek purana dost samajhta hai.
-3. Jab user apni problem bataye, tabhi landing pages suggest karo.
-4. Amazon ID 'smileai24-21' ko hamesha relevant suggestions me use karo.
-5. Agar user 'DONE' bole, toh 99-rupee discount aur sharing ka message dikhao.
-6. Wording hamesha saaf, badi aur bina faltu symbols ke honi chahiye.
-7. Saari languages me expert raho.
-"""
+# Aapke Rules (Human-like Nature)
+SYSTEM_PROMPT = """Tum ek insaan ki tarah baat karne wale Financial Dost ho. 
+Smile Finance Solution ke liye kaam karte ho. 
+Wording hamesha saaf, badi aur bina faltu symbols ke rakho. 
+Customer ki need analyze karo, shuru mein koi bank name mat lo. 
+Baad mein landing page dikhao aur Amazon ID smileai24-21 use karo."""
 
-# Gemini Setup
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=SYSTEM_PROMPT)
+# API Key Connection
+if "GEMINI_API_KEY" in st.secrets:
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+    model = genai.GenerativeModel('gemini-1.5-flash', system_instruction=SYSTEM_PROMPT)
+else:
+    st.error("Please add GEMINI_API_KEY in Streamlit Secrets!")
 
-st.title("Smile Finance AI")
-st.caption("Aapka apna Financial Dost")
+st.title("💰 Smile Finance AI")
+st.write("Aapka apna financial dost. Bataiye, kya pareshani hai?")
 
-# Chat History
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+        st.write(message["content"])
 
-# User Input
-if prompt := st.chat_input("Boliye, main kaise madad kar sakta hoon?"):
+if prompt := st.chat_input("Kaise madad karoon?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
-        st.markdown(prompt)
+        st.write(prompt)
 
     with st.chat_message("assistant"):
         response = model.generate_content(prompt)
-        st.markdown(response.text)
+        st.write(response.text)
         st.session_state.messages.append({"role": "assistant", "content": response.text})
